@@ -8,9 +8,6 @@ import os
 # identificar diretorios de trabalho
 dir_raiz, dir_dados = coletar_nomes_frequentes.configurar_diretorios()
 
-# carregar dados
-df = pd.read_csv(f'{dir_dados}/dados_tratados.csv', sep=';', encoding='utf-8')
-
 
 def criar_bd(dir_dados):
     # verificar se o banco existe
@@ -25,14 +22,12 @@ def criar_bd(dir_dados):
     conn.execute('''
     CREATE TABLE obituarios (
         id INTEGER PRIMARY KEY,
-        num_obtuario INTEGER,
-        cemiterio TEXT,
+        num_obituario INTEGER,
         falecido TEXT,
         data_falecimento DATE,
         sexo TEXT,
         cor TEXT,
         data_nascimento DATE,
-        localizacao TEXT,
         detalhes TEXT
     )
     ''')
@@ -99,5 +94,7 @@ def consultar_df_bd():
 
 
 def carregar_dados_bd():
+    # carregar dados
+    df = pd.read_csv(f'{dir_dados}/dados_tratados.csv', sep=';', encoding='utf-8')
     criar_bd(dir_dados)
     inserir_dados_bd(df)

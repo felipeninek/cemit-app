@@ -40,8 +40,45 @@ def ler_arquivos_cemit(dir_dados):
 
     # reset index
     df_agrupado = df_agrupado.reset_index(drop=True)
-
+    print('arquivo lido')
     return df_agrupado
+
+
+def redefinir_formato(df):    
+    df['falecido'] = df['falecido'].str.title()
+
+    df['sexo'] = df['sexo'].replace({'IGN':'Não informado'})
+    df['sexo'] = df['sexo'].str.title()
+
+    df['cor'] = df['cor'].replace({'IGN':'Não informado'})
+    df['cor'] = df['cor'].str.title()
+
+    # retirar idade pois é possivel conseguir o valor através do calculo de data_falecimento - data_nascimento
+    df = df.drop(columns=['cemiterio', 'idade', 'localizacao'])
+
+    df['detalhes'] = df['detalhes'].str.title()
+
+    return df
+
+
+def redefinir_tipagem(df):
+    # redefinir tipagem
+    df = df.rename(columns={'num_obtuario':'num_obituario'})
+    df['num_obituario'] = df['num_obituario'].astype('int64')
+
+    df['falecido'] = df['falecido'].astype('string')
+
+    df['data_falecimento'] = pd.to_datetime(df['data_falecimento'], errors='coerce', dayfirst=True)
+
+    df['sexo'] = df['sexo'].astype('string')
+
+    df['cor'] = df['cor'].astype('string')
+
+    df['data_nascimento'] = pd.to_datetime(df['data_nascimento'], errors='coerce', dayfirst=True)
+
+    df['detalhes'] = df['detalhes'].astype('string')
+
+    return df
 
 
 def tratar_duplicados(df):
@@ -66,67 +103,12 @@ def tratar_nulos(df):
 
     if df_nulos.shape[0] > 0:
         # retirar dados nulos e manter informações importantes
-        df = df.dropna(subset=['num_obtuario',
-                                'cemiterio',
-                                'falecido',
-                                'data_falecimento',
-                                'sexo',
-                                'cor',
-                                'data_nascimento',
-                                'idade'])
+        df = df.dropna()
 
         # resetar index
         df = df.reset_index(drop=True)
     
     return df, df_nulos
-
-
-def redefinir_formato(df):
-    # melhorar nomes dos cemiterios
-    df['cemiterio'] = df['cemiterio'].replace({'NECROPOLE DO CAMPO SANTO - GUARULHOS - SP':'Necrópole do Campo Santo',
-                                               'SAO JUDAS TADEU - GUARULHOS - SP':'São Judas Tadeu',
-                                               'NOSSA SENHORA DE BONSUCESSO - GUARULHOS - SP':'Nossa Senhora de Bonsucesso'})
-    
-    df['falecido'] = df['falecido'].str.title()
-
-    df['sexo'] = df['sexo'].replace({'IGN':'Não informado'})
-    df['sexo'] = df['sexo'].str.title()
-
-    df['cor'] = df['cor'].replace({'IGN':'Não informado'})
-    df['cor'] = df['cor'].str.title()
-
-    # retirar idade pois é possivel conseguir o valor através do calculo de data_falecimento - data_nascimento
-    df = df.drop(columns=['idade'])
-
-    df['localizacao'] = df['localizacao'].str[13:]
-    df['localizacao'] = df['localizacao'].str.title()
-
-    df['detalhes'] = df['detalhes'].str.title()
-
-    return df
-
-
-def redefinir_tipagem(df):
-    # redefinir tipagem
-    df['num_obtuario'] = df['num_obtuario'].astype('int64')
-
-    df['cemiterio'] = df['cemiterio'].astype('category')
-
-    df['falecido'] = df['falecido'].astype('string')
-
-    df['data_falecimento'] = pd.to_datetime(df['data_falecimento'], errors='coerce', dayfirst=True)
-
-    df['sexo'] = df['sexo'].astype('string')
-
-    df['cor'] = df['cor'].astype('string')
-
-    df['data_nascimento'] = pd.to_datetime(df['data_nascimento'], errors='coerce', dayfirst=True)
-
-    df['localizacao'] = df['localizacao'].astype('string')
-
-    df['detalhes'] = df['detalhes'].astype('string')
-
-    return df
 
 
 def salvar_dados_tratados(df, dir_dados):
@@ -135,8 +117,8 @@ def salvar_dados_tratados(df, dir_dados):
 
 def tratar_dados():
     df = ler_arquivos_cemit(dir_dados)
-    df = tratar_duplicados(df)
-    df, df_nulos = tratar_nulos(df)
     df = redefinir_formato(df)
     df = redefinir_tipagem(df)
+    df = tratar_duplicados(df)
+    df, df_nulos = tratar_nulos(df)
     salvar_dados_tratados(df, dir_dados)
